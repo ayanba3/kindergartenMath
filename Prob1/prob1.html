@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number Line Interactive with Distances Text Only</title>
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+  }
+  #numberLineCanvas {
+    border: 1px solid black;
+  }
+</style>
+</head>
+<body>
+<div>
+  <label for="nValueSlider">N Value: <span id="nValueDisplay">60</span></label>
+  <input type="range" id="nValueSlider" min="20" max="98" value="60">
+</div>
+<canvas id="numberLineCanvas" width="600" height="200"></canvas>
+
+<script>
+// JavaScript to handle the slider and draw on the canvas
+const nValueSlider = document.getElementById('nValueSlider');
+const nValueDisplay = document.getElementById('nValueDisplay');
+const canvas = document.getElementById('numberLineCanvas');
+const ctx = canvas.getContext('2d');
+
+function drawNumberLine(nValue) {
+  // Clear the canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw number line
+  ctx.beginPath();
+  ctx.moveTo(10, 100);
+  ctx.lineTo(590, 100);
+  ctx.stroke();
+
+  // Mark the points 19, 99, and N
+  const scale = 5.6; // Scale to fit 0-100 within 560px (600px canvas width with 20px padding on each side)
+  const point19 = 19 * scale + 20;
+  const point99 = 99 * scale + 20;
+  const pointN = nValue * scale + 20;
+  drawPoint(point19, '19', 100);
+  drawPoint(point99, '99', 100);
+  drawPoint(pointN, `N=${nValue}`, 100);
+
+  // Show distances as text only
+  showDistanceText(point19, pointN, `N-19=${nValue-19}`, 75);
+  showDistanceText(pointN, point99, `99-N=${99-nValue}`, 75);
+
+  function drawPoint(x, text, y) {
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2, true);
+    ctx.fill();
+
+    // Text
+    ctx.fillText(text, x, y - 10);
+  }
+
+  function showDistanceText(x1, x2, text, y) {
+    // Text only
+    const midX = (x1 + x2) / 2;
+    ctx.fillText(text, midX, y);
+  }
+}
+
+// Initial draw
+drawNumberLine(nValueSlider.value);
+
+nValueSlider.oninput = function() {
+  nValueDisplay.textContent = this.value;
+  drawNumberLine(this.value);
+};
+</script>
+</body>
+</html>
+
