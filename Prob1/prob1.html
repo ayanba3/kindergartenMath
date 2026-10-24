@@ -1,84 +1,93 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Number Line Interactive with Distances Text Only</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Problem 1 · Find the middle</title>
 <style>
-  body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    margin: 0;
-  }
-  #numberLineCanvas {
-    border: 1px solid black;
-  }
+:root{color-scheme:light;--ink:#202b40;--blue:#285ec7;--orange:#a6530d}*{box-sizing:border-box}body{margin:0;background:#f5f7fc;color:var(--ink);font:16px/1.6 system-ui,sans-serif}main{max-width:850px;margin:32px auto;padding:28px;background:white;border-radius:20px;box-shadow:0 8px 32px #203b6510}a{color:var(--blue)}nav{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}h1{font-size:clamp(1.8rem,5vw,2.5rem);line-height:1.2;margin:24px 0 12px}h2{font-size:1.1rem;margin:0 0 10px}.eyebrow{margin:26px 0 6px;color:#526179;font-size:.85rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.question{background:#edf3ff;border-left:4px solid var(--blue);border-radius:10px;padding:18px;margin:20px 0}.question p{margin:0}.muted{color:#526179}.diagram{margin:20px 0 12px;border:1px solid #d9e2ef;border-radius:14px;padding:12px}svg{display:block;width:100%;height:auto;overflow:visible}svg text{font:18px system-ui,sans-serif;fill:var(--ink);text-anchor:middle}svg .small{font-size:15px}label{font-weight:650}input[type=range]{width:100%;min-height:44px;accent-color:var(--blue);cursor:pointer}.control-top{display:flex;align-items:center;justify-content:space-between;gap:12px}output{font-size:1.4rem;font-weight:700;font-variant-numeric:tabular-nums}.range-ends{display:flex;justify-content:space-between;color:#526179;font-size:.85rem}.distances{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}.distance{padding:14px;border-radius:12px;background:#edf3ff}.distance.right{background:#fff3e6}.distance span{display:block;font-size:.9rem}.distance strong{font-size:1.7rem;font-variant-numeric:tabular-nums}.left{color:var(--blue)}.right{color:var(--orange)}.feedback{background:#f1f4f9;border-radius:12px;padding:16px;min-height:84px}.feedback.success{background:#e7f5ed;color:#165c35}button,summary{font:inherit;cursor:pointer}button{background:white;color:var(--ink);border:1px solid #b5c3d8;border-radius:9px;padding:9px 16px;min-height:44px}button:hover{background:#edf3ff}button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #ca7d1c;outline-offset:4px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 24px}details{border-top:1px solid #d9e2ef;padding:16px 0}summary{font-weight:650}details p{margin:10px 0 0}.rule{font-size:.9rem;color:#526179}footer{margin-top:20px;border-top:1px solid #d9e2ef;padding-top:18px}@media(max-width:600px){main{margin:12px;padding:18px}.distance{padding:12px}.distance span{font-size:.8rem}}
 </style>
 </head>
 <body>
-<div>
-  <label for="nValueSlider">N Value: <span id="nValueDisplay">60</span></label>
-  <input type="range" id="nValueSlider" min="20" max="98" value="60">
+<main>
+<nav aria-label="Problem navigation"><a href="../">← All problems</a><a href="../Prob2/prob2.html">Problem 2 →</a></nav>
+<p class="eyebrow">Problem 1 · Number sense</p>
+<h1>Find the middle</h1>
+<p class="muted">Two distances. One balancing point.</p>
+<section class="question" aria-labelledby="question-title">
+<h2 id="question-title">Your challenge</h2>
+<p>A number <strong>N</strong> is between <strong>19</strong> and <strong>99</strong>. The distance from 19 to N is the same as the distance from N to 99. <strong>What is N?</strong></p>
+</section>
+<h2>Move N and compare the distances</h2>
+<p class="muted">Slide the dot until the blue and orange parts are equally long. You can also use the slider’s arrow keys to move one step at a time.</p>
+<div class="diagram">
+<svg viewBox="0 0 640 180" role="img" aria-labelledby="line-title line-description">
+<title id="line-title">Find a number equally far from 19 and 99</title>
+<desc id="line-description">The slider moves N along the number line.</desc>
+<line x1="48" y1="82" x2="592" y2="82" stroke="#d2dbea" stroke-width="8" stroke-linecap="round"/>
+<line id="left-segment" x1="48" y1="82" x2="326.8" y2="82" stroke="#285ec7" stroke-width="8" stroke-linecap="round"/>
+<line id="right-segment" x1="326.8" y1="82" x2="592" y2="82" stroke="#bc651d" stroke-width="8" stroke-linecap="round"/>
+<circle cx="48" cy="82" r="7" fill="#285ec7"/><circle cx="592" cy="82" r="7" fill="#bc651d"/>
+<text x="48" y="122">19</text><text x="592" y="122">99</text>
+<line id="marker-stem" x1="326.8" y1="48" x2="326.8" y2="82" stroke="#202b40" stroke-width="2"/>
+<circle id="marker" cx="326.8" cy="82" r="10" fill="white" stroke="#202b40" stroke-width="3"/>
+<text id="marker-label" x="326.8" y="30">N = 60</text>
+<text x="320" y="165" class="small">Whole distance: 99 − 19 = 80 steps</text>
+</svg>
 </div>
-<canvas id="numberLineCanvas" width="600" height="200"></canvas>
-
+<div class="control-top"><label for="nValueSlider">Choose N</label><output id="nValueDisplay" for="nValueSlider">60</output></div>
+<input type="range" id="nValueSlider" min="20" max="98" step="1" value="60" aria-describedby="slider-help">
+<div class="range-ends" id="slider-help"><span>20 · closer to 19</span><span>98 · closer to 99</span></div>
+<div class="distances">
+<div class="distance left"><span>From 19 to N</span><strong id="left-distance">41 steps</strong><span id="left-equation">60 − 19 = 41</span></div>
+<div class="distance right"><span>From N to 99</span><strong id="right-distance">39 steps</strong><span id="right-equation">99 − 60 = 39</span></div>
+</div>
+<div id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"></div>
+<div class="actions"><button id="reset" type="button">Start again</button></div>
+<details><summary>Hint: think about the whole distance</summary><p>There are 80 steps from 19 to 99. If N splits that distance into two equal parts, how many steps belong on each side? Start at 19 and move that many steps.</p></details>
+<details><summary>Show the reasoning</summary><p>Split the whole distance in half: <strong>80 ÷ 2 = 40</strong>. Move 40 steps from 19: <strong>19 + 40 = 59</strong>. Check both sides: <strong>59 − 19 = 40</strong> and <strong>99 − 59 = 40</strong>. So <strong>N = 59</strong>.</p><p class="rule">The middle of two numbers is equally far from both endpoints.</p></details>
+<noscript><p>Enable JavaScript to move the dot. You can still open the hint and reasoning above.</p></noscript>
+<footer><a href="../Prob2/prob2.html">Try Problem 2: Build a band →</a></footer>
+</main>
 <script>
-// JavaScript to handle the slider and draw on the canvas
-const nValueSlider = document.getElementById('nValueSlider');
-const nValueDisplay = document.getElementById('nValueDisplay');
-const canvas = document.getElementById('numberLineCanvas');
-const ctx = canvas.getContext('2d');
-
-function drawNumberLine(nValue) {
-  // Clear the canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Draw number line
-  ctx.beginPath();
-  ctx.moveTo(10, 100);
-  ctx.lineTo(590, 100);
-  ctx.stroke();
-
-  // Mark the points 19, 99, and N
-  const scale = 5.6; // Scale to fit 0-100 within 560px (600px canvas width with 20px padding on each side)
-  const point19 = 19 * scale + 20;
-  const point99 = 99 * scale + 20;
-  const pointN = nValue * scale + 20;
-  drawPoint(point19, '19', 100);
-  drawPoint(point99, '99', 100);
-  drawPoint(pointN, `N=${nValue}`, 100);
-
-  // Show distances as text only
-  showDistanceText(point19, pointN, `N-19=${nValue-19}`, 75);
-  showDistanceText(pointN, point99, `99-N=${99-nValue}`, 75);
-
-  function drawPoint(x, text, y) {
-    ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2, true);
-    ctx.fill();
-
-    // Text
-    ctx.fillText(text, x, y - 10);
+(() => {
+  const get = id => document.getElementById(id);
+  const slider = get('nValueSlider');
+  function update() {
+    const n = Number(slider.value);
+    const left = n - 19;
+    const right = 99 - n;
+    const x = 48 + (n - 19) / 80 * 544;
+    get('nValueDisplay').textContent = String(n);
+    get('left-distance').textContent = left + ' steps';
+    get('right-distance').textContent = right + ' steps';
+    get('left-equation').textContent = n + ' − 19 = ' + left;
+    get('right-equation').textContent = '99 − ' + n + ' = ' + right;
+    get('left-segment').setAttribute('x2', x);
+    get('right-segment').setAttribute('x1', x);
+    get('marker').setAttribute('cx', x);
+    get('marker-stem').setAttribute('x1', x);
+    get('marker-stem').setAttribute('x2', x);
+    get('marker-label').setAttribute('x', x);
+    get('marker-label').textContent = 'N = ' + n;
+    get('line-description').textContent = 'N is ' + n + '. From 19 to N: ' + left + ' steps. From N to 99: ' + right + ' steps.';
+    slider.setAttribute('aria-valuetext', n + '; ' + left + ' steps from 19 and ' + right + ' steps from 99');
+    const balanced = left === right;
+    get('feedback').classList.toggle('success', balanced);
+    get('feedback').textContent = balanced
+      ? 'You found it! N = ' + n + '. Both sides are 40 steps long, so N is exactly in the middle.'
+      : (left > right ? 'The blue side is longer. Move N left' : 'The orange side is longer. Move N right')
+        + ' to make the two distances equal.';
   }
-
-  function showDistanceText(x1, x2, text, y) {
-    // Text only
-    const midX = (x1 + x2) / 2;
-    ctx.fillText(text, midX, y);
-  }
-}
-
-// Initial draw
-drawNumberLine(nValueSlider.value);
-
-nValueSlider.oninput = function() {
-  nValueDisplay.textContent = this.value;
-  drawNumberLine(this.value);
-};
+  slider.addEventListener('input', update);
+  get('reset').addEventListener('click', () => {
+    slider.value = '60';
+    for (const detail of document.querySelectorAll('details')) detail.open = false;
+    update();
+    slider.focus();
+  });
+  update();
+})();
 </script>
 </body>
 </html>
-
