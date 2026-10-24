@@ -1,0 +1,276 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Problem 2 · Band lineups</title><style>:root{color-scheme:light;--foreground:#202b40;--muted-foreground:#526179;--muted:#edf1f7;--border:#bcc9dc;--viz-series-1:#3568d4}*{box-sizing:border-box}body{margin:0;font:16px/1.5 system-ui,sans-serif;background:#f5f7fc;color:var(--foreground)}main{max-width:850px;margin:32px auto;padding:24px;background:white;border-radius:20px;box-shadow:0 8px 32px #203b6510}a{color:#2754b5}h1{font-size:clamp(1.6rem,4vw,2.2rem);margin:.6em 0}h3{margin:0;font-size:1.25rem}.intro{margin-bottom:24px}.btn{font:inherit;font-size:15px;line-height:1.2;min-height:38px;padding:8px 12px;border:1px solid #bcc9dc;border-radius:9px;background:white;color:var(--foreground);cursor:pointer}.btn:hover{background:#edf3ff}.btn[aria-pressed=true]{background:#e1ebff;border-color:#3568d4;color:#163f93;box-shadow:inset 0 0 0 1px #3568d4}.btn:focus-visible{outline:3px solid #d17c16;outline-offset:2px}.btn-block{width:100%;padding:8px 2px}.viz-row{display:flex;flex-wrap:wrap;gap:8px}.text-small{font-size:14px}.tabular-nums{font-variant-numeric:tabular-nums}.table{width:100%;border-collapse:collapse;text-align:center}.table th,.table td{padding:8px 2px;border-bottom:1px solid var(--border)}svg{font:15px system-ui,sans-serif}.band-section{padding:16px 0;border-top:1px solid #e0e6ef}#band-choice-tree .band-heading{padding-inline-end:0}@media(max-width:600px){main{margin:12px;padding:14px}.band-count-row{font-size:14px}}</style></head><body><main><nav><a href="../">← All problems</a></nav><h1>Problem 2: Build a band</h1><p class="intro">Lily, Max, Nora, Oscar, and Pia want to form a band. Choose three different people for Lead, Drums, and Guitar. Follow the rules below. How many different lineups can you make?</p><p>Pick a Lead, then click a Guitar name to trace one complete path. Count each path once, then add the cases.</p><div id="band-choice-tree">
+  <style>
+    #band-choice-tree { display: grid; gap: 14px; color: var(--foreground); }
+    #band-choice-tree .band-heading { padding-inline-end: 100px; }
+    #band-choice-tree .band-section { display: grid; gap: 8px; }
+    #band-choice-tree .band-rule-list { display: grid; gap: 4px; }
+    #band-choice-tree .band-tree { display: block; width: 100%; overflow: visible; }
+    #band-choice-tree .band-diagram { min-width: 0; }
+    #band-choice-tree .band-count-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+    #band-choice-tree strong { font-weight: 500; }
+    #band-choice-tree .band-no-lead { display: grid; place-items: center; min-height: 140px; }
+    #band-choice-tree [hidden] { display: none; }
+  </style>
+
+  <div class="band-heading"><h3>Count one choice at a time</h3></div>
+
+  <div class="band-rule-list text-small" aria-label="The three rules">
+    <span>Max: no Drums</span>
+    <span>Nora: no Lead</span>
+    <span>Lily and Oscar: never together</span>
+  </div>
+
+  <div class="band-section">
+    <strong>1. Pick the Lead</strong>
+    <div class="viz-row" id="band-lead-picker" role="group" aria-label="Choose a Lead to explore">
+      <button class="btn" type="button" data-lead="L" aria-pressed="true">Lily</button>
+      <button class="btn" type="button" data-lead="M" aria-pressed="false">Max</button>
+      <button class="btn" type="button" data-lead="N" aria-pressed="false" aria-label="Nora: cannot be Lead"><s>Nora</s></button>
+      <button class="btn" type="button" data-lead="O" aria-pressed="false">Oscar</button>
+      <button class="btn" type="button" data-lead="P" aria-pressed="false">Pia</button>
+    </div>
+  </div>
+
+  <div class="band-section">
+    <div class="band-count-row">
+      <strong>2. Choose Drums, then Guitar</strong>
+      <output class="tabular-nums" id="band-case-count" aria-live="polite">Lily: 4 lineups</output>
+    </div>
+    <div class="text-small" id="band-drum-exclusions">No Drums: Lily is already Lead; Max says no; Oscar cannot join Lily.</div>
+    <div class="band-diagram" id="band-diagram">
+      <svg class="band-tree" id="band-tree-svg" role="group" aria-label="Choice tree for Lily as Lead"></svg>
+    </div>
+    <div class="band-no-lead" id="band-no-lead" hidden><strong>Nora cannot be Lead: 0 lineups</strong></div>
+    <div id="band-selected-path" aria-live="polite">One lineup: Lily → Nora → Max</div>
+  </div>
+
+  <div class="band-section">
+    <strong>3. Add the Lead cases</strong>
+    <table class="table table-sm" aria-label="Number of valid lineups for each Lead">
+      <thead><tr><th scope="col">Lily</th><th scope="col">Max</th><th scope="col">Nora</th><th scope="col">Oscar</th><th scope="col">Pia</th></tr></thead>
+      <tbody><tr id="band-case-totals" class="tabular-nums"><td>4</td><td>10</td><td>0</td><td>4</td><td>7</td></tr></tbody>
+    </table>
+    <div class="band-count-row"><span>All valid lineups</span><strong id="band-answer" class="tabular-nums">25</strong></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const root = document.getElementById('band-choice-tree');
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const people = [
+    { id: 'L', name: 'Lily' },
+    { id: 'M', name: 'Max' },
+    { id: 'N', name: 'Nora' },
+    { id: 'O', name: 'Oscar' },
+    { id: 'P', name: 'Pia' }
+  ];
+  const names = Object.fromEntries(people.map(person => [person.id, person.name]));
+  const picker = root.querySelector('#band-lead-picker');
+  const diagram = root.querySelector('#band-diagram');
+  const svg = root.querySelector('#band-tree-svg');
+  const noLead = root.querySelector('#band-no-lead');
+  const exclusions = root.querySelector('#band-drum-exclusions');
+  const caseCount = root.querySelector('#band-case-count');
+  const selectedPath = root.querySelector('#band-selected-path');
+  let lead = 'L';
+  let selected = 'LNM';
+  let rootEdges = new Map();
+  let leafEdges = new Map();
+  let leafButtons = new Map();
+
+  // A lineup is ordered: [Lead, Drums, Guitar]. A person can have only one job.
+  function isValid(lineup) {
+    return new Set(lineup).size === 3
+      && lineup[0] !== 'N'
+      && lineup[1] !== 'M'
+      && !(lineup.includes('L') && lineup.includes('O'));
+  }
+
+  // Group complete paths by the choice made at the Drums branch.
+  function branchesFor(chosenLead) {
+    return people.map(drummer => ({
+      drums: drummer.id,
+      guitars: people.filter(guitar => isValid([chosenLead, drummer.id, guitar.id]))
+        .map(guitar => guitar.id)
+    })).filter(branch => branch.guitars.length > 0);
+  }
+
+  const countFor = chosenLead => branchesFor(chosenLead)
+    .reduce((sum, branch) => sum + branch.guitars.length, 0);
+
+  const counts = people.map(person => countFor(person.id));
+  root.querySelector('#band-case-totals').replaceChildren(...counts.map(count => {
+    const cell = document.createElement('td');
+    cell.textContent = count;
+    return cell;
+  }));
+  root.querySelector('#band-answer').textContent = counts.reduce((a, b) => a + b, 0);
+
+  function svgElement(tag, attributes = {}, content) {
+    const element = document.createElementNS(svgNS, tag);
+    for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, value);
+    if (content !== undefined) element.textContent = content;
+    return element;
+  }
+
+  function addText(x, y, text, secondary = false) {
+    const element = svgElement('text', {
+      x, y,
+      'text-anchor': 'middle',
+      'dominant-baseline': 'middle',
+      fill: secondary ? 'var(--muted-foreground)' : 'var(--foreground)',
+      class: secondary ? 'text-small' : ''
+    }, text);
+    svg.append(element);
+    return element;
+  }
+
+  function node(x, y, label, nodeWidth) {
+    svg.append(svgElement('rect', {
+      x: x - nodeWidth / 2, y: y - 17, width: nodeWidth, height: 34,
+      rx: 8, fill: 'var(--muted)'
+    }));
+    addText(x, y, label);
+  }
+
+  function edge(fromX, fromY, toX, toY) {
+    const halfway = (fromX + toX) / 2;
+    const path = svgElement('path', {
+      d: 'M ' + fromX + ' ' + fromY + ' C ' + halfway + ' ' + fromY
+        + ', ' + halfway + ' ' + toY + ', ' + toX + ' ' + toY,
+      fill: 'none', stroke: 'var(--border)', 'stroke-width': 1.5
+    });
+    svg.append(path);
+    return path;
+  }
+
+  function highlightPath() {
+    for (const [drums, path] of rootEdges) {
+      const active = selected[1] === drums;
+      path.setAttribute('stroke', active ? 'var(--viz-series-1)' : 'var(--border)');
+      path.setAttribute('stroke-width', active ? 2.5 : 1.5);
+    }
+    for (const [id, path] of leafEdges) {
+      const active = id === selected;
+      path.setAttribute('stroke', active ? 'var(--viz-series-1)' : 'var(--border)');
+      path.setAttribute('stroke-width', active ? 2.5 : 1.5);
+      leafButtons.get(id).setAttribute('aria-pressed', String(active));
+    }
+    selectedPath.textContent = 'One lineup: ' + names[selected[0]] + ' → '
+      + names[selected[1]] + ' → ' + names[selected[2]];
+  }
+
+  function drawTree() {
+    if (lead === 'N') return;
+    const width = Math.floor(diagram.getBoundingClientRect().width);
+    if (width < 100) return;
+    const branches = branchesFor(lead);
+    const nodeWidth = Math.min(94, width * 0.27);
+    const columns = [width * 0.15, width * 0.5, width * 0.85];
+    const leafStep = 48;
+    const branchGap = 14;
+    const top = 52;
+    let y = top;
+    const positioned = branches.map(branch => {
+      const leaves = branch.guitars.map(guitar => {
+        const leaf = { guitar, y };
+        y += leafStep;
+        return leaf;
+      });
+      y += branchGap;
+      return { ...branch, leaves, y: (leaves[0].y + leaves[leaves.length - 1].y) / 2 };
+    });
+    const lastLeaf = positioned[positioned.length - 1].leaves.slice(-1)[0];
+    const height = lastLeaf.y + 34;
+    const rootY = (top + lastLeaf.y) / 2;
+    svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+    svg.setAttribute('aria-label', names[lead] + ' as Lead: ' + countFor(lead)
+      + ' complete paths. Each path is one valid lineup. Choose a Guitar button to trace a path.');
+    svg.replaceChildren();
+    svg.append(svgElement('title', {}, 'Lead → Drums → Guitar'));
+    svg.append(svgElement('desc', {}, positioned.map(branch => names[branch.drums]
+      + ' on Drums allows ' + branch.guitars.map(id => names[id]).join(' or ')
+      + ' on Guitar.').join(' ')));
+    rootEdges = new Map();
+    leafEdges = new Map();
+    leafButtons = new Map();
+
+    for (const branch of positioned) {
+      rootEdges.set(branch.drums, edge(columns[0] + nodeWidth / 2, rootY,
+        columns[1] - nodeWidth / 2, branch.y));
+      for (const leaf of branch.leaves) {
+        const id = lead + branch.drums + leaf.guitar;
+        leafEdges.set(id, edge(columns[1] + nodeWidth / 2, branch.y,
+          columns[2] - nodeWidth / 2, leaf.y));
+      }
+    }
+
+    ['Lead', 'Drums', 'Guitar'].forEach((role, index) => addText(columns[index], 14, role));
+    node(columns[0], rootY, names[lead], nodeWidth);
+
+    for (const branch of positioned) {
+      node(columns[1], branch.y, names[branch.drums], nodeWidth);
+      addText(columns[1], branch.y + 28, branch.guitars.length + ' ways', true);
+      for (const leaf of branch.leaves) {
+        const id = lead + branch.drums + leaf.guitar;
+        const foreign = svgElement('foreignObject', {
+          x: columns[2] - nodeWidth / 2, y: leaf.y - 22, width: nodeWidth, height: 44
+        });
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-block';
+        button.textContent = names[leaf.guitar];
+        button.dataset.lineup = id;
+        button.setAttribute('aria-label', 'Trace lineup: Lead ' + names[lead]
+          + ', Drums ' + names[branch.drums] + ', Guitar ' + names[leaf.guitar]);
+        button.addEventListener('click', () => {
+          selected = id;
+          highlightPath();
+        });
+        const alignment = document.createElement('div');
+        alignment.style.display = 'grid';
+        alignment.style.alignItems = 'center';
+        alignment.style.height = '100%';
+        alignment.append(button);
+        foreign.append(alignment);
+        svg.append(foreign);
+        leafButtons.set(id, button);
+      }
+    }
+    highlightPath();
+  }
+
+  function selectLead(id) {
+    lead = id;
+    for (const button of picker.querySelectorAll('button')) {
+      button.setAttribute('aria-pressed', String(button.dataset.lead === lead));
+    }
+    const forbidden = lead === 'N';
+    diagram.hidden = forbidden;
+    noLead.hidden = !forbidden;
+    selectedPath.hidden = forbidden;
+    exclusions.hidden = forbidden;
+    caseCount.textContent = names[lead] + ': ' + countFor(lead) + ' lineups';
+    if (forbidden) return;
+
+    const unavailable = [names[lead] + ' is already Lead'];
+    if (lead !== 'M') unavailable.push('Max says no');
+    if (lead === 'L') unavailable.push('Oscar cannot join Lily');
+    if (lead === 'O') unavailable.push('Lily cannot join Oscar');
+    exclusions.textContent = 'No Drums: ' + unavailable.join('; ') + '.';
+    const firstBranch = branchesFor(lead)[0];
+    selected = lead + firstBranch.drums + firstBranch.guitars[0];
+    drawTree();
+  }
+
+  for (const button of picker.querySelectorAll('button')) {
+    button.addEventListener('click', () => selectLead(button.dataset.lead));
+  }
+  new ResizeObserver(() => drawTree()).observe(diagram);
+  selectLead('L');
+})();
+</script>
+<noscript>Enable JavaScript to explore the choice tree. The answer is 4 + 10 + 0 + 4 + 7 = 25 lineups.</noscript></main></body></html>
